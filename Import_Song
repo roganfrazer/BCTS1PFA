@@ -1,0 +1,27 @@
+// Documentation Used In This Section: 
+// https://processing.org/reference/selectInput_.html
+// http://code.compartmental.net/minim/minim_method_loadfile.html 
+// https://processing.org/examples/directorylist.html
+
+String NewSong;
+void fileSelected(File selection) {
+  if (selection == null) {
+    playing = false; 
+    println("Window was closed or the user hit cancel.");
+  } else {
+   NewSong = selection.getAbsolutePath(); 
+   println(NewSong);  
+   player.close();
+   player = minim.loadFile (NewSong);
+   player.loop();
+  meta = player.getMetaData();
+  beat = new BeatDetect(player.bufferSize(), player.sampleRate());
+  beat.setSensitivity(300);
+  }
+}
+// If the T key is pressed it opens the browse dialog
+void keyPressed() {
+if (key=='t'){  
+ selectInput("Select a file to process:", "fileSelected");
+}
+}
