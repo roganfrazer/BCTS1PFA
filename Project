@@ -1,0 +1,151 @@
+/************************************************************************
+ *             COMP570 Programing For Creativty 2016 S1:                *
+ *----------------------------------------------------------------------*
+ *   ____                                                               *
+ *   / _ \_ __ ___   __ _ _ __ __ _ _ __ ___  _ __ ___ (_)_ __   __ _   *
+ *  / /_)/ '__/ _ \ / _` | '__/ _` | '_ ` _ \| '_ ` _ \| | '_ \ / _` |  *
+ * / ___/| | | (_) | (_| | | | (_| | | | | | | | | | | | | | | | (_| |  *
+ * \/    |_|  \___/ \__, |_|  \__,_|_| |_| |_|_| |_| |_|_|_| |_|\__, |  *
+ *                 |___/                                       |___/    *
+ *    ___              ___               _   _       _ _                *
+ *   / __\__  _ __    / __\ __ ___  __ _| |_(_)_   _(_) |_ _   _        *
+ *  / _\/ _ \| '__|  / / | '__/ _ \/ _` | __| \ \ / / | __| | | |       *
+ * / / | (_) | |    / /__| | |  __/ (_| | |_| |\ V /| | |_| |_| |       *
+ * \/   \___/|_|    \____/_|  \___|\__,_|\__|_| \_/ |_|\__|\__, |       *
+ *                                                         |___/        *
+ *                                                                      *
+ *----------------------------------------------------------------------*
+ *  About:                                                              *
+ *  This program Displays text, and the user can play rad music,        *
+ *  makes a music visualization and can be screenshoted created art     *
+ *  Author Rogan Frazer Student ID# 15903570                            *
+ //---------------------------------------------------------------------*
+ *   Change Log / Verison History  DD/MM/YR                             *  
+ *   Verison 1.0(Initial Release) 02.06.2016                            *
+ //---------------------------------------------------------------------*
+ *  Special thanks to:                                                  *
+ *  Stefan Marks, for everything.                                       *
+ *  Luke Munn, Helping me debug the error's. (www.lukemunn.com)         *
+ *  Nathan Young, for last minute changes.  (www.ncyrocks.tumblr.com)   *
+ //---------------------------------------------------------------------*
+ *  All media used without perrmison:                                   *
+ *  Wallpaper by Matt Adrian (www.mincingmockingbird.com)               *
+ *  Song Credits Default: Dopamine by DIIV                              *
+ *  DIVV are Zachary Cole Smith,Andrew Bailey, Devin Ruben Perez        *
+ *  Colin Caulfield,Ben Newman                                          *
+ *  Font Cochin:  Georges Peignot, Matthew Carter                       *
+ //---------------------------------------------------------------------*
+ *  Info:                                                               *
+ *  Songs tested with .mp3 files and works fine.                        *
+ *  Processing Verison 3.1.1      OS: Mac OS X Used.                    * 
+ //---------------------------------------------------------------------*
+ *       Main Links And Documentations Used:                            *
+ *                       Processing Refence:                            *
+ *            https://processing.org/reference/                         *
+ *                       Minim Refence:                                 *
+ *           http://code.compartmental.net/tools/minim/quickstart/      *
+ *           http://code.compartmental.net/minim/                       *
+ *                                                                      *
+/************************************************************************
+                     Global Variables Start
+************************************************************************/
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.effects.*;
+import ddf.minim.signals.*;
+import ddf.minim.spi.*;
+import ddf.minim.ugens.*;
+
+Minim minim;
+AudioPlayer player;
+AudioInput input;
+AudioMetaData meta;
+BeatDetect beat;
+// Minim Setup Finish
+
+// Variables
+PFont f ;
+
+float x;
+float y;
+
+PImage photo;
+
+int radius = 100;
+float nScale = 150;
+float noiseMulti = 150;
+
+boolean playing; 
+
+//The setup() function is run once, when the program starts.
+void setup() {
+  f = createFont(("Cochin"), 24); // Use Font Cochin and font Size 24
+  fullScreen(P2D); // Full Screen Mode 
+  frameRate(30);  // Setting 30FPS (Frames Per Second)
+  smooth();
+  photo = loadImage("Wallpaper.jpg");  // background Picture Used in data folder
+  // Minim
+  minim = new Minim(this);
+  player = minim.loadFile("music.mp3"); // Muisc Used in data folder.
+  player.play();
+  meta = player.getMetaData();
+  beat = new BeatDetect(player.bufferSize(), player.sampleRate());
+  beat.setSensitivity(300);
+}
+void draw() {
+   noStroke(); 
+   fill(0);
+   photo.resize(width, height);
+   rect(0, 0, width, height);
+   image(photo, 0, 0);
+   translate(width/2, height/2);
+   // Text 
+   textFont(f);
+   textAlign(CENTER, CENTER);
+      line(TOP, width, TOP, height);
+   textSize(32);
+   fill(#fedd00); // Hex Yellsow Colour not RGB http://rgb.to/pantone/coated/yellow-c
+   text("Rogan Frazer 2016 BCT AUT", 0, 30);  // Text you want to display and X,Y 
+   text("Glitter To Gold Productions", 0, 60);
+   text("press T to load a new song", 0, 240);
+   text("press S screenshot a frame", 0, 280);
+   // Beat Detector
+   beat.detect(player.mix);
+   if (beat.isKick()) {
+   noiseMulti = 150;
+   nScale = 150;
+   } else {
+   if (nScale > 100) nScale *= 0.9;
+   noiseMulti *= 0.5;
+   }
+   colorMode(HSB, 360, 255, 255);
+   for (int lat = -90; lat < 90; lat+=2)
+   {
+   for (int lng = -180; lng < 180; lng+=2)
+   {
+   float _lat = radians(lat);  
+   float _lng = radians(lng);  
+   // noise
+   float n = noise(_lat * noiseMulti / 100, _lng * noiseMulti / 200 + millis() );
+   
+   float x = (radius + n * nScale) * cos(_lat) * cos(_lng);
+   float y = (radius + n * nScale) * sin(_lat) * (-1);
+   float z = (radius + n * nScale) * cos(_lat) * sin(_lng);
+   
+   stroke(lng+180, 255, 60+noiseMulti);
+   stroke(lng+180, 255, 60+noiseMulti);
+   point(x, y, z);
+   }
+   }
+   
+/***********************************************************************
+                          Screen Caputre Start
+************************************************************************/
+
+if (key=='s'){  
+     saveFrame("Picture/#########.jpg");
+    if (frameCount == 1) {
+     exit();
+   }
+  }
+}
